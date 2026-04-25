@@ -23,6 +23,13 @@ npm run lint     # ESLint
 
 No test runner is configured yet.
 
+## Code Generation Guidelines
+
+** IMPORTANT**: When generating any code, ALWAYS first refer to the relevant documentation files within the `/docs/` directory to understand existing patterns, conventions and best practices befrome making implementations:
+
+- /docs/ui.md
+- /docs/data-fetching.md
+
 ## Architecture
 
 - **Framework**: Next.js 16.2.4 (App Router), React 19, TypeScript 5
