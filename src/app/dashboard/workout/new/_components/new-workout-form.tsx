@@ -26,11 +26,11 @@ export function NewWorkoutForm() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     startTransition(async () => {
-      await createWorkoutAction({
+      const workout = await createWorkoutAction({
         startedAt,
         notes: notes.trim() || undefined,
       });
-      router.push("/dashboard");
+      router.push(`/dashboard/workout/${workout.id}`);
     });
   }
 
