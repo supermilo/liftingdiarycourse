@@ -13,11 +13,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { createWorkoutAction } from "../actions";
+import { updateWorkoutAction } from "../actions";
 
-export function NewWorkoutForm() {
-  const [startedAt, setStartedAt] = useState<Date>(new Date());
-  const [notes, setNotes] = useState("");
+type Props = {
+  workoutId: number;
+  initialStartedAt: Date;
+  initialNotes: string | null;
+};
+
+export function EditWorkoutForm({ workoutId, initialStartedAt, initialNotes }: Props) {
+  const [startedAt, setStartedAt] = useState<Date>(initialStartedAt);
+  const [notes, setNotes] = useState(initialNotes ?? "");
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -26,11 +32,12 @@ export function NewWorkoutForm() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     startTransition(async () => {
-      const workout = await createWorkoutAction({
+      await updateWorkoutAction({
+        workoutId,
         startedAt,
         notes: notes.trim() || undefined,
       });
-      router.push(`/dashboard/workout/${workout.id}`);
+      router.push("/dashboard");
     });
   }
 
@@ -76,9 +83,19 @@ export function NewWorkoutForm() {
         />
       </div>
 
-      <Button type="submit" disabled={isPending}>
-        {isPending ? "Creating..." : "Create Workout"}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Saving..." : "Save Changes"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push("/dashboard")}
+          disabled={isPending}
+        >
+          Cancel
+        </Button>
+      </div>
     </form>
   );
 }
