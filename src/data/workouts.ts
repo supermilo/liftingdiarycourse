@@ -2,6 +2,70 @@ import { db } from "@/db";
 import { workouts, workoutExercises, exercises, sets } from "@/db/schema";
 import { and, eq, gte, lte } from "drizzle-orm";
 
+export async function getWorkoutById(
+  workoutId: number,
+  userId: string
+): Promise<WorkoutWithExercises | null> {
+  const rows = await db
+    .select({
+      workoutId: workouts.id,
+      startedAt: workouts.startedAt,
+      completedAt: workouts.completedAt,
+      workoutNotes: workouts.notes,
+      workoutExerciseId: workoutExercises.id,
+      exerciseName: exercises.name,
+      setNumber: sets.setNumber,
+      reps: sets.reps,
+      weightKg: sets.weightKg,
+    })
+    .from(workouts)
+    .leftJoin(workoutExercises, eq(workoutExercises.workoutId, workouts.id))
+    .leftJoin(exercises, eq(exercises.id, workoutExercises.exerciseId))
+    .leftJoin(sets, eq(sets.workoutExerciseId, workoutExercises.id))
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
+    .orderBy(workoutExercises.order, sets.setNumber);
+
+  if (rows.length === 0) return null;
+
+  const first = rows[0];
+  const workout: WorkoutWithExercises = {
+    id: first.workoutId,
+    startedAt: first.startedAt,
+    completedAt: first.completedAt,
+    notes: first.workoutNotes,
+    exercises: [],
+  };
+
+  for (const row of rows) {
+    if (row.workoutExerciseId !== null) {
+      let exercise = workout.exercises.find((e) => e.id === row.workoutExerciseId);
+      if (!exercise) {
+        exercise = { id: row.workoutExerciseId, exerciseName: row.exerciseName!, sets: [] };
+        workout.exercises.push(exercise);
+      }
+      if (row.setNumber !== null) {
+        exercise.sets.push({ setNumber: row.setNumber, reps: row.reps, weightKg: row.weightKg });
+      }
+    }
+  }
+
+  return workout;
+}
+
+export async function updateWorkout(
+  workoutId: number,
+  userId: string,
+  startedAt: Date,
+  notes?: string
+) {
+  const [updated] = await db
+    .update(workouts)
+    .set({ startedAt, notes: notes ?? null })
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
+    .returning();
+  return updated ?? null;
+}
+
 export async function createWorkout(
   userId: string,
   startedAt: Date,
