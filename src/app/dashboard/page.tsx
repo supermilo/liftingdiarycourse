@@ -12,7 +12,7 @@ export default async function DashboardPage({
   const { date: dateParam } = await searchParams;
 
   const date = dateParam ? parseISO(dateParam) : new Date();
-  const workouts = userId ? await getUserWorkoutsForDate(userId, date) : [];
+  const workouts = await getUserWorkoutsForDate(userId!, date);
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">

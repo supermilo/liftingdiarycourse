@@ -14,9 +14,8 @@ export default async function EditWorkoutPage({
   if (!Number.isInteger(workoutId) || workoutId <= 0) notFound();
 
   const { userId } = await auth();
-  if (!userId) notFound();
 
-  const workout = await getWorkoutById(workoutId, userId);
+  const workout = await getWorkoutById(workoutId, userId!);
   if (!workout) notFound();
 
   return (
