@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { format, parseISO } from "date-fns";
+import Link from "next/link";
 import { DatePicker } from "./_components/date-picker";
 import { getUserWorkoutsForDate } from "@/data/workouts";
 
@@ -31,7 +32,11 @@ export default async function DashboardPage({
           </p>
         ) : (
           workouts.map((workout) => (
-            <div key={workout.id} className="border rounded-lg p-4 space-y-4">
+            <Link
+              key={workout.id}
+              href={`/dashboard/workout/${workout.id}`}
+              className="block border rounded-lg p-4 space-y-4 hover:bg-muted/50 transition-colors"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   {format(workout.startedAt, "do MMM yyyy")}
@@ -62,7 +67,7 @@ export default async function DashboardPage({
                   </div>
                 ))}
               </div>
-            </div>
+            </Link>
           ))
         )}
       </section>
