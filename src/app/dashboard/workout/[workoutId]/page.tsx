@@ -29,7 +29,7 @@ export default async function EditWorkoutPage({
       <EditWorkoutForm
         workoutId={workout.id}
         initialName={workout.name}
-        initialStartedAt={workout.startedAt}
+        initialStartedAt={workout.startedAt.toISOString().slice(0, 10)}
         initialNotes={workout.notes}
       />
 

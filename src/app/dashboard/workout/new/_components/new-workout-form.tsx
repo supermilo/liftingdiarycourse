@@ -17,7 +17,7 @@ import {
 import { createWorkoutAction } from "../actions";
 
 export function NewWorkoutForm() {
-  const [startedAt, setStartedAt] = useState<Date>(new Date());
+  const [startedAt, setStartedAt] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -36,6 +36,8 @@ export function NewWorkoutForm() {
       router.push(`/dashboard/workout/${workout.id}`);
     });
   }
+
+  const calendarDate = new Date(startedAt + "T12:00:00");
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -60,16 +62,16 @@ export function NewWorkoutForm() {
               className="w-[200px] justify-start gap-2"
             >
               <CalendarIcon className="size-4" />
-              {format(startedAt, "do MMM yyyy")}
+              {format(calendarDate, "do MMM yyyy")}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={startedAt}
+              selected={calendarDate}
               onSelect={(d) => {
                 if (d) {
-                  setStartedAt(d);
+                  setStartedAt(format(d, "yyyy-MM-dd"));
                   setCalendarOpen(false);
                 }
               }}

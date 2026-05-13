@@ -19,12 +19,12 @@ import { updateWorkoutAction } from "../actions";
 type Props = {
   workoutId: number;
   initialName: string | null;
-  initialStartedAt: Date;
+  initialStartedAt: string;
   initialNotes: string | null;
 };
 
 export function EditWorkoutForm({ workoutId, initialName, initialStartedAt, initialNotes }: Props) {
-  const [startedAt, setStartedAt] = useState<Date>(initialStartedAt);
+  const [startedAt, setStartedAt] = useState<string>(initialStartedAt);
   const [name, setName] = useState(initialName ?? "");
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -44,6 +44,8 @@ export function EditWorkoutForm({ workoutId, initialName, initialStartedAt, init
       router.push("/dashboard");
     });
   }
+
+  const calendarDate = new Date(startedAt + "T12:00:00");
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -68,16 +70,16 @@ export function EditWorkoutForm({ workoutId, initialName, initialStartedAt, init
               className="w-[200px] justify-start gap-2"
             >
               <CalendarIcon className="size-4" />
-              {format(startedAt, "do MMM yyyy")}
+              {format(calendarDate, "do MMM yyyy")}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={startedAt}
+              selected={calendarDate}
               onSelect={(d) => {
                 if (d) {
-                  setStartedAt(d);
+                  setStartedAt(format(d, "yyyy-MM-dd"));
                   setCalendarOpen(false);
                 }
               }}

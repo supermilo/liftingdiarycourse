@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import Link from "next/link";
 import { DatePicker } from "./_components/date-picker";
 import { DeleteWorkoutButton } from "./_components/delete-workout-button";
@@ -14,14 +14,15 @@ export default async function DashboardPage({
   const { userId } = await auth();
   const { date: dateParam } = await searchParams;
 
-  const date = dateParam ? parseISO(dateParam) : new Date();
-  const workouts = await getUserWorkoutsForDate(userId!, date);
+  const dateStr = dateParam ?? format(new Date(), "yyyy-MM-dd");
+  const displayDate = new Date(dateStr + "T12:00:00");
+  const workouts = await getUserWorkoutsForDate(userId!, dateStr);
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
-      <DatePicker selected={date} />
+      <DatePicker selected={displayDate} />
 
       <Button asChild>
         <Link href="/dashboard/workout/new">Log New Workout</Link>
@@ -29,7 +30,7 @@ export default async function DashboardPage({
 
       <section className="space-y-4">
         <h2 className="text-lg font-medium">
-          Workouts for {format(date, "do MMM yyyy")}
+          Workouts for {format(displayDate, "do MMM yyyy")}
         </h2>
 
         {workouts.length === 0 ? (

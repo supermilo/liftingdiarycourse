@@ -112,12 +112,11 @@ export type WorkoutWithExercises = {
 
 export async function getUserWorkoutsForDate(
   userId: string,
-  date: Date
+  dateStr: string // "yyyy-MM-dd"
 ): Promise<WorkoutWithExercises[]> {
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(date);
-  end.setHours(23, 59, 59, 999);
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const start = new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0));
+  const end = new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999));
 
   const rows = await db
     .select({

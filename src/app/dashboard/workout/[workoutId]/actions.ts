@@ -9,7 +9,7 @@ import { addSet, removeSet } from "@/data/sets";
 
 const updateWorkoutSchema = z.object({
   workoutId: z.number().int().positive(),
-  startedAt: z.coerce.date(),
+  startedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   notes: z.string().max(500).optional(),
   name: z.string().max(100).optional(),
 });
@@ -22,7 +22,10 @@ export async function updateWorkoutAction(
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthenticated");
 
-  return updateWorkout(workoutId, userId, startedAt, notes, name);
+  const [y, m, d] = startedAt.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+
+  return updateWorkout(workoutId, userId, date, notes, name);
 }
 
 const addExerciseSchema = z.object({
