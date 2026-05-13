@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { getWorkoutById } from "@/data/workouts";
+import { getUserExercises } from "@/data/exercises";
 import { EditWorkoutForm } from "./_components/edit-workout-form";
+import { ExerciseList } from "./_components/exercise-list";
 
 export default async function EditWorkoutPage({
   params,
@@ -15,7 +17,10 @@ export default async function EditWorkoutPage({
 
   const { userId } = await auth();
 
-  const workout = await getWorkoutById(workoutId, userId!);
+  const [workout, userExercises] = await Promise.all([
+    getWorkoutById(workoutId, userId!),
+    getUserExercises(userId!),
+  ]);
   if (!workout) notFound();
 
   return (
@@ -23,9 +28,21 @@ export default async function EditWorkoutPage({
       <h1 className="text-2xl font-semibold">Edit Workout</h1>
       <EditWorkoutForm
         workoutId={workout.id}
+        initialName={workout.name}
         initialStartedAt={workout.startedAt}
         initialNotes={workout.notes}
       />
+
+      <hr />
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-medium">Exercises</h2>
+        <ExerciseList
+          workoutId={workout.id}
+          exercises={workout.exercises}
+          userExercises={userExercises}
+        />
+      </section>
     </div>
   );
 }

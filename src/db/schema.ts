@@ -14,6 +14,7 @@ export const exercises = pgTable('exercises', {
 export const workouts = pgTable('workouts', {
   id: serial('id').primaryKey(),
   userId: varchar('user_id', { length: 100 }).notNull(),
+  name: varchar('name', { length: 100 }),
   startedAt: timestamp('started_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
   notes: text('notes'),

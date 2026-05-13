@@ -9,11 +9,13 @@ export async function getWorkoutById(
   const rows = await db
     .select({
       workoutId: workouts.id,
+      workoutName: workouts.name,
       startedAt: workouts.startedAt,
       completedAt: workouts.completedAt,
       workoutNotes: workouts.notes,
       workoutExerciseId: workoutExercises.id,
       exerciseName: exercises.name,
+      setId: sets.id,
       setNumber: sets.setNumber,
       reps: sets.reps,
       weightKg: sets.weightKg,
@@ -30,6 +32,7 @@ export async function getWorkoutById(
   const first = rows[0];
   const workout: WorkoutWithExercises = {
     id: first.workoutId,
+    name: first.workoutName,
     startedAt: first.startedAt,
     completedAt: first.completedAt,
     notes: first.workoutNotes,
@@ -43,8 +46,8 @@ export async function getWorkoutById(
         exercise = { id: row.workoutExerciseId, exerciseName: row.exerciseName!, sets: [] };
         workout.exercises.push(exercise);
       }
-      if (row.setNumber !== null) {
-        exercise.sets.push({ setNumber: row.setNumber, reps: row.reps, weightKg: row.weightKg });
+      if (row.setId !== null && row.setNumber !== null) {
+        exercise.sets.push({ id: row.setId, setNumber: row.setNumber, reps: row.reps, weightKg: row.weightKg });
       }
     }
   }
@@ -56,30 +59,42 @@ export async function updateWorkout(
   workoutId: number,
   userId: string,
   startedAt: Date,
-  notes?: string
+  notes?: string,
+  name?: string
 ) {
   const [updated] = await db
     .update(workouts)
-    .set({ startedAt, notes: notes ?? null })
+    .set({ startedAt, notes: notes ?? null, name: name ?? null })
     .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
     .returning();
   return updated ?? null;
 }
 
+export async function deleteWorkout(
+  workoutId: number,
+  userId: string
+): Promise<void> {
+  await db
+    .delete(workouts)
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)));
+}
+
 export async function createWorkout(
   userId: string,
   startedAt: Date,
-  notes?: string
+  notes?: string,
+  name?: string
 ) {
   const [workout] = await db
     .insert(workouts)
-    .values({ userId, startedAt, notes })
+    .values({ userId, startedAt, notes, name })
     .returning();
   return workout;
 }
 
 export type WorkoutWithExercises = {
   id: number;
+  name: string | null;
   startedAt: Date;
   completedAt: Date | null;
   notes: string | null;
@@ -87,6 +102,7 @@ export type WorkoutWithExercises = {
     id: number;
     exerciseName: string;
     sets: {
+      id: number;
       setNumber: number;
       reps: number | null;
       weightKg: string | null;
@@ -106,11 +122,13 @@ export async function getUserWorkoutsForDate(
   const rows = await db
     .select({
       workoutId: workouts.id,
+      workoutName: workouts.name,
       startedAt: workouts.startedAt,
       completedAt: workouts.completedAt,
       workoutNotes: workouts.notes,
       workoutExerciseId: workoutExercises.id,
       exerciseName: exercises.name,
+      setId: sets.id,
       setNumber: sets.setNumber,
       reps: sets.reps,
       weightKg: sets.weightKg,
@@ -134,6 +152,7 @@ export async function getUserWorkoutsForDate(
     if (!workoutMap.has(row.workoutId)) {
       workoutMap.set(row.workoutId, {
         id: row.workoutId,
+        name: row.workoutName,
         startedAt: row.startedAt,
         completedAt: row.completedAt,
         notes: row.workoutNotes,
@@ -154,8 +173,9 @@ export async function getUserWorkoutsForDate(
         workout.exercises.push(exercise);
       }
 
-      if (row.setNumber !== null) {
+      if (row.setId !== null && row.setNumber !== null) {
         exercise.sets.push({
+          id: row.setId,
           setNumber: row.setNumber,
           reps: row.reps,
           weightKg: row.weightKg,
